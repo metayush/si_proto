@@ -197,9 +197,12 @@ var EventLogger = (function () {
     function getIsInZoomTarget() { return _isInZoomTarget; }
     function setIsInZoomTarget(v) { _isInZoomTarget = v; }
 
-    function updateCursorPosition(x, y) {
+    var _latestCursorExtra = null;
+
+    function updateCursorPosition(x, y, extraData) {
         if (!_enabled) return;
         _latestCursorPos = { x: x, y: y };
+        _latestCursorExtra = extraData || null;
     }
 
     function startCursorTrace(svgElement) {
@@ -244,7 +247,14 @@ _cursorTraceTargetSvgRect = null;
                 return;
             }
 
-            _cursorTrace.push({ t: Date.now(), x: _latestCursorPos.x, y: _latestCursorPos.y });
+            var sample = { t: Date.now(), x: _latestCursorPos.x, y: _latestCursorPos.y };
+            if (_latestCursorExtra) {
+                var keys = Object.keys(_latestCursorExtra);
+                for (var i = 0; i < keys.length; i++) {
+                    sample[keys[i]] = _latestCursorExtra[keys[i]];
+                }
+            }
+            _cursorTrace.push(sample);
             _lastRecordedTime = now;
             _lastRecordedCursor = { x: _latestCursorPos.x, y: _latestCursorPos.y };
             _cursorTraceRafId = requestAnimationFrame(rafLoop);
