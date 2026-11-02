@@ -20,7 +20,8 @@ Then open **http://localhost:8000** in your browser.
 - **Multiple datasets**: Practice, Natural Language, Natural Language with Punctuation, Emails, Passwords, Metal Keys
 - **Autocorrect modes**: Off, System (browser-native), or Custom (keyboard-aware Levenshtein distance)
 - **QA Mode**: Requires 100% accuracy with real-time character highlighting
-- **UXR Mode**: Activated via URL parameter (`?setting_preset=uxr` or `?setting_preset=uxr_webview`), submits per-prompt results to a Google Form
+- **Google Form logging**: Every finished prompt is submitted to the study's Google Form, on every dataset except Practice. No URL parameter is needed.
+- **UXR Mode**: Activated via URL parameter (`?setting_preset=uxr` or `?setting_preset=uxr_webview`); requires a User ID, uses 100 prompts, hides results, and turns on detailed logging
 - **Metrics**: WPM, Adjusted WPM (AWPM), Accuracy, Uncorrected Error Rate (UER), Corrected Error Rate (CER), Total Error Rate (TER)
 
 ## Project Structure
@@ -50,3 +51,4 @@ Then open **http://localhost:8000** in your browser.
 | `autocorrect` | `off`, `system`, `custom` | Sets the autocorrect mode |
 | `num_prompts` | integer | Limits the number of prompts to display |
 | `user_id` | any string | Sets the user ID for form submissions |
+| `detailedLog` | `true` | Downloads a JSON log of every key event and text change at the end of each run (skipped for Practice and QA mode; always on in UXR presets) |
