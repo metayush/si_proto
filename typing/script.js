@@ -1059,6 +1059,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     let inputType = 'physical-keyboard';
+    let inputTypeChangedByUser = false;
 
     // Add event listeners for dataset radio buttons
     const inputTypeRadios = document.querySelectorAll('input[name="input-type"]');
@@ -1066,9 +1067,50 @@ document.addEventListener('DOMContentLoaded', async function () {
         radio.addEventListener('change', function () {
             if (this.checked) {
                 inputType = this.value;
+                inputTypeChangedByUser = true;
             }
         });
     });
+
+    function setInputType(value) {
+        const radio = document.getElementById(value);
+        if (!radio) return;
+        radio.checked = true;
+        inputType = value;
+    }
+
+    // Auto-select the input type from the device: headset -> SKB, tablet -> Tablet,
+    // anything else keeps the Physical Keyboard default. Runs before the
+    // setting_preset and input_type URL parameters, so those still override it.
+    function isHeadset() {
+        return /OculusBrowser|Oculus|Quest|PicoBrowser|Pico\b|Wolvic|\bVR\b/i.test(navigator.userAgent);
+    }
+
+    function isTablet() {
+        const ua = navigator.userAgent;
+        if (/iPad/.test(ua)) return true;
+        // iPadOS Safari reports itself as a Mac; real Macs have no touchscreen
+        if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+        // Android phones include "Mobile" in the UA; Android tablets do not
+        if (/Android/i.test(ua) && !/Mobile/i.test(ua)) return true;
+        return /Silk|Kindle/i.test(ua);
+    }
+
+    if (isHeadset()) {
+        setInputType('skb');
+    } else if (isTablet()) {
+        setInputType('tablet');
+    } else if (navigator.xr && navigator.xr.isSessionSupported) {
+        // Fallback for headset browsers with an unrecognised UA: they support
+        // immersive VR. Only applied if nothing else has picked the input type.
+        navigator.xr.isSessionSupported('immersive-vr').then(supported => {
+            if (supported && !inputTypeChangedByUser && !testActive &&
+                getURLParameter('input_type') === null &&
+                getURLParameter('setting_preset') === null) {
+                setInputType('skb');
+            }
+        }).catch(() => {});
+    }
 
     // Add event listeners for autocorrect mode radio buttons
     const autocorrectRadios = document.querySelectorAll('input[name="autocorrect-mode"]');
@@ -1194,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     function flushDetailedLogs() {
         if (!detailedLogEnabled || detailedLogAccumulated.length === 0) return;
 
-        const userId = document.getElementById('user-id').value || 'anonymous';
+        const userId = document.getElementById('user-id').value || 'unknown';
         const dataset = detailedLogAccumulated[0].dataset || 'unknown';
         if (!isLoggedDataset(dataset)) {
             // Same rule as the Google Form: practice and QA runs are not saved.
@@ -1205,7 +1247,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
         const ts = new Date().toISOString().replace(/[:.]/g, '-');
         const sanitize = (s) => String(s).replace(/[^a-zA-Z0-9_-]/g, '_');
-        const filename = `${sanitize(userId)}_${sanitize(dataset)}_${ts}.json`;
+        // Same <participant>_<task>_<timestamp>.json pattern as the fitts/uxr logs;
+        // the dataset is recorded inside each entry.
+        const filename = `${sanitize(userId)}_typing_${ts}.json`;
 
         const blob = new Blob([JSON.stringify(detailedLogAccumulated, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);

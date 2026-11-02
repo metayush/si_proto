@@ -210,28 +210,32 @@ function zoomTouchMoveHandler(e) {
 }
 
 function onZoomSuccess() {
-    if (successfulClicks >= MAX_ZOOM_TRIALS) return;
+    if (successfulClicks >= trialsNeeded(MAX_ZOOM_TRIALS)) return;
     successfulClicks += 1;
     playChime(true);
     if (_warnIfNoEventLogger()) EventLogger.logEvent('zoom_success', { targetIndex: successfulClicks, zoomCurrentScale: zoomCurrentScale, currentSize: zoomInnerBaseSize * zoomCurrentScale, zoomTargetSize: zoomTargetSize, successfulClicks: successfulClicks });
 
-    if (successfulClicks >= MAX_ZOOM_TRIALS) {
+    if (successfulClicks >= trialsNeeded(MAX_ZOOM_TRIALS)) {
         document.getElementById('start-screen').style.display = "";
         document.getElementById('zoom-body').style.display = "none";
 
         let startText = document.getElementById('start-text');
         let elapsedStr = (elapsed / 1000).toFixed(2);
-        startText.innerText = `#${trialNum}, TTC: ${elapsedStr}s, Gestures: ${gestureCount}\n` + startText.innerText;
-        submitForm(trialNum, elapsedStr, gestureCount);
-        if (_warnIfNoEventLogger()) {
-            EventLogger.stopTrace('zoomValue');
-            document.removeEventListener('mousemove', zoomMouseMoveHandler);
-            document.removeEventListener('touchmove', zoomTouchMoveHandler);
-            EventLogger.endTrial({ trialNum: trialNum, timeToComplete: elapsedStr, gestureCount: gestureCount });
-            EventLogger.downloadLog();
-            EventLogger.clearLog();
+        if (practiceMode) {
+            startText.innerText = `Practice complete (not recorded)\n` + startText.innerText;
+        } else {
+            startText.innerText = `#${trialNum}, TTC: ${elapsedStr}s, Gestures: ${gestureCount}\n` + startText.innerText;
+            submitForm(trialNum, elapsedStr, gestureCount);
+            if (_warnIfNoEventLogger()) {
+                EventLogger.stopTrace('zoomValue');
+                document.removeEventListener('mousemove', zoomMouseMoveHandler);
+                document.removeEventListener('touchmove', zoomTouchMoveHandler);
+                EventLogger.endTrial({ trialNum: trialNum, timeToComplete: elapsedStr, gestureCount: gestureCount });
+                EventLogger.downloadLog();
+                EventLogger.clearLog();
+            }
+            trialNum += 1;
         }
-        trialNum += 1;
     } else {
         generateZoomTarget();
         if (_warnIfNoEventLogger()) {
@@ -240,7 +244,8 @@ function onZoomSuccess() {
     }
 }
 
-function startZoomExperience() {
+function startZoomExperience(practice = false) {
+    practiceMode = practice;
     rng = new RandomGenerator();
     successfulClicks = 0;
     gestureCount = 0;

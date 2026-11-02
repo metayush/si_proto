@@ -10,6 +10,7 @@ const HOLD_DURATION_MS = 1000;
 const MOVE_INTERVAL_TIMER_MS = 3000;
 const MAX_SCROLL_TRIALS = 6;
 const MAX_SELECTION_TRIALS = 6;
+const PRACTICE_TRIALS = 3;
 
 let timer;
 let backgroundTimer;
@@ -27,6 +28,7 @@ let gestureCount = 0;
 let isGesturing = false;
 let gestureStopTimeout = null;
 let sessionId;
+let practiceMode = false;   // Practice runs: PRACTICE_TRIALS targets, no form submission or event log
 var scrollCursorX = null;
 var scrollCursorY = null;
 
@@ -56,11 +58,16 @@ var lastSelectionMissText = null;
 
 let _eventLoggerWarnShown = false;
 function _warnIfNoEventLogger() {
+    if (practiceMode) return false;   // Nothing is logged during practice
     if (typeof EventLogger === 'undefined' && !_eventLoggerWarnShown) {
         console.warn('[UXR] EventLogger is not loaded — event logging is inactive. Add ?eventLog=true to enable.');
         _eventLoggerWarnShown = true;
     }
     return typeof EventLogger !== 'undefined';
+}
+
+function trialsNeeded(max) {
+    return practiceMode ? PRACTICE_TRIALS : max;
 }
 
 class RandomGenerator {
@@ -308,7 +315,7 @@ function highlightRandomPhraseScroll() {
 
     showUpDownArrows();
 
-    if (successfulClicks >= MAX_SCROLL_TRIALS) {
+    if (successfulClicks >= trialsNeeded(MAX_SCROLL_TRIALS)) {
         // End experience
         document.getElementById('start-screen').style.display = "";
         document.getElementById('scroll-body').style.display = "none";
@@ -318,17 +325,21 @@ function highlightRandomPhraseScroll() {
 
         let startText = document.getElementById('start-text');
         let elapsedStr = (elapsed / 1000).toFixed(2)
-        startText.innerText = `#${trialNum}, TTC: ${elapsedStr}s, Gestures: ${gestureCount}\n` + startText.innerText;
-        submitForm(trialNum, elapsedStr, gestureCount);
-        if (_warnIfNoEventLogger()) {
-            EventLogger.stopTrace('scrollPosition');
-            document.removeEventListener('mousemove', scrollMouseMoveHandler);
-            document.removeEventListener('touchmove', scrollTouchMoveHandler);
-            EventLogger.endTrial({ trialNum: trialNum, timeToComplete: elapsedStr, gestureCount: gestureCount });
-            EventLogger.downloadLog();
-            EventLogger.clearLog();
+        if (practiceMode) {
+            startText.innerText = `Practice complete (not recorded)\n` + startText.innerText;
+        } else {
+            startText.innerText = `#${trialNum}, TTC: ${elapsedStr}s, Gestures: ${gestureCount}\n` + startText.innerText;
+            submitForm(trialNum, elapsedStr, gestureCount);
+            if (_warnIfNoEventLogger()) {
+                EventLogger.stopTrace('scrollPosition');
+                document.removeEventListener('mousemove', scrollMouseMoveHandler);
+                document.removeEventListener('touchmove', scrollTouchMoveHandler);
+                EventLogger.endTrial({ trialNum: trialNum, timeToComplete: elapsedStr, gestureCount: gestureCount });
+                EventLogger.downloadLog();
+                EventLogger.clearLog();
+            }
+            trialNum += 1;
         }
-        trialNum += 1;
     } else {
         if (_warnIfNoEventLogger()) EventLogger.setIsInTarget(false);
     }
@@ -461,7 +472,8 @@ function onScrollCallback() {
     }
 }
 
-function startScrollExperience() {
+function startScrollExperience(practice = false) {
+    practiceMode = practice;
     rng = new RandomGenerator();
     successfulClicks = 0;
     gestureCount = 0;
@@ -611,7 +623,7 @@ function selectionChangedHandler() {
         successfulClicks += 1;
         if (_warnIfNoEventLogger()) EventLogger.logEvent('selection_success', { targetIndex: successfulClicks, targetText: targetText, selectedText: selection });
 
-        if (successfulClicks >= MAX_SELECTION_TRIALS) {
+        if (successfulClicks >= trialsNeeded(MAX_SELECTION_TRIALS)) {
             // End experience
             document.getElementById('start-screen').style.display = "";
             document.getElementById('textselection-body').style.display = "none";
@@ -623,22 +635,26 @@ function selectionChangedHandler() {
 
             let startText = document.getElementById('start-text');
             let elapsedStr = (elapsed / 1000).toFixed(2)
-            startText.innerText = `#${trialNum}, TTC: ${elapsedStr}s, Gestures: ${gestureCount}\n` + startText.innerText;
-            submitForm(trialNum, elapsedStr, gestureCount);
-            if (_warnIfNoEventLogger()) {
-                EventLogger.stopTrace('textSelectionCursor');
-                document.removeEventListener('mousemove', textSelectionMouseMoveHandler);
-                document.removeEventListener('touchmove', textSelectionTouchMoveHandler);
-                document.removeEventListener('mousedown', textSelectionDragStartHandler);
-                document.removeEventListener('touchstart', textSelectionDragStartHandler);
-                document.removeEventListener('mouseup', textSelectionDragEndHandler);
-                document.removeEventListener('touchend', textSelectionDragEndHandler);
-                EventLogger.endTrial({ trialNum: trialNum, timeToComplete: elapsedStr, gestureCount: gestureCount });
-                EventLogger.downloadLog();
-                EventLogger.clearLog();
-            }
+            if (practiceMode) {
+                startText.innerText = `Practice complete (not recorded)\n` + startText.innerText;
+            } else {
+                startText.innerText = `#${trialNum}, TTC: ${elapsedStr}s, Gestures: ${gestureCount}\n` + startText.innerText;
+                submitForm(trialNum, elapsedStr, gestureCount);
+                if (_warnIfNoEventLogger()) {
+                    EventLogger.stopTrace('textSelectionCursor');
+                    document.removeEventListener('mousemove', textSelectionMouseMoveHandler);
+                    document.removeEventListener('touchmove', textSelectionTouchMoveHandler);
+                    document.removeEventListener('mousedown', textSelectionDragStartHandler);
+                    document.removeEventListener('touchstart', textSelectionDragStartHandler);
+                    document.removeEventListener('mouseup', textSelectionDragEndHandler);
+                    document.removeEventListener('touchend', textSelectionDragEndHandler);
+                    EventLogger.endTrial({ trialNum: trialNum, timeToComplete: elapsedStr, gestureCount: gestureCount });
+                    EventLogger.downloadLog();
+                    EventLogger.clearLog();
+                }
 
-            trialNum += 1;
+                trialNum += 1;
+            }
         }
     } else if (selection.length > 0) {
         if (_warnIfNoEventLogger() && selection !== lastSelectionMissText) {
@@ -685,7 +701,8 @@ function removeExcessParagraphs() {
     }
 }
 
-function startTextSelectionExperience() {
+function startTextSelectionExperience(practice = false) {
+    practiceMode = practice;
     rng = new RandomGenerator();
     successfulClicks = 0;
     gestureCount = 0;
@@ -739,8 +756,8 @@ function startTimer() {
 			startTime = timestamp;
 
 		elapsed = timestamp - startTime;
-		document.getElementById('text-top-left').innerText = (elapsed / 1000).toFixed(2);
-		if ((EXPERIENCE_NAME == "Scroll" && successfulClicks >= MAX_SCROLL_TRIALS) || (EXPERIENCE_NAME == "Text Selection" && successfulClicks >= MAX_SELECTION_TRIALS) || (EXPERIENCE_NAME == "Zoom" && typeof MAX_ZOOM_TRIALS !== 'undefined' && successfulClicks >= MAX_ZOOM_TRIALS)) {
+		document.getElementById('text-top-left').innerText = (practiceMode ? 'Practice ' : '') + (elapsed / 1000).toFixed(2);
+		if ((EXPERIENCE_NAME == "Scroll" && successfulClicks >= trialsNeeded(MAX_SCROLL_TRIALS)) || (EXPERIENCE_NAME == "Text Selection" && successfulClicks >= trialsNeeded(MAX_SELECTION_TRIALS)) || (EXPERIENCE_NAME == "Zoom" && typeof MAX_ZOOM_TRIALS !== 'undefined' && successfulClicks >= trialsNeeded(MAX_ZOOM_TRIALS))) {
 			console.log('stop timer');
 			return;
 		}
