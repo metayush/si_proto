@@ -301,6 +301,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const inputArea = document.getElementById('input-area');
     const startButton = document.getElementById('start-button');
     const results = document.getElementById('results');
+    const resultsDetails = document.getElementById('results-details');
     const wpmElement = document.getElementById('wpm');
     const accuracyElement = document.getElementById('accuracy');
 
@@ -686,6 +687,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Reuse the normal results panel (shortcut-metrics are the visible set
         // in key-chord mode).
         if (kcExitBtn) kcExitBtn.style.display = 'none';
+        resultsDetails.open = false; // scores stay hidden until "Completed" is tapped
         results.style.display = 'block';
         startButton.style.display = 'block';
         startButton.textContent = 'Start New Test';
@@ -1783,6 +1785,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Display results (hide in UXR mode)
         if (!uxrModeEnabled) {
+            resultsDetails.open = false; // scores stay hidden until "Completed" is tapped
             results.style.display = 'block';
         }
     }

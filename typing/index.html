@@ -43,7 +43,10 @@
             </div>
 
             <div class="results" id="results">
-                <h2>Your Average Results</h2>
+                <!-- Collapsed by default so participants don't see their scores
+                     unless they choose to expand it. -->
+                <details id="results-details">
+                <summary class="results-summary">Completed</summary>
                 <div id="text-metrics">
                     <div class="primary-metric-container">
                         <div class="metric primary-metric">Adjusted WPM (AWPM): <span id="awpm">0</span></div>
@@ -61,6 +64,7 @@
                     <div class="metric">Total time: <span id="kc-time">0</span> s</div>
                     <div class="metric">Average time per prompt: <span id="kc-avg-time">0</span> s</div>
                 </div>
+                </details>
             </div>
         </div>
 
