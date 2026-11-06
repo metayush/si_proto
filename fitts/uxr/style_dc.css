@@ -41,6 +41,30 @@
     align-items: center;
 }
 
+/* Input method toggle (STP / Other) above Start */
+.input-method-select {
+    display: flex;
+    justify-content: center;
+}
+
+.input-method-select .input-method-button {
+    font-size: 2rem;
+    padding: 0.75rem 1.5rem;
+    margin: 0.5rem;
+    min-width: 7rem;
+}
+
+.input-method-select .input-method-button.selected {
+    background: #0866ff;
+    border-color: #0866ff;
+    color: #fff;
+}
+
+#start-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 .target-button {
     position: absolute;
     transform: translate(-50%, -50%);

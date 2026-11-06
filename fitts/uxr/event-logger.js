@@ -83,6 +83,7 @@ var EventLogger = (function () {
             sessionStartTimestamp: now,
             sessionStartIso: new Date(now).toISOString()
         };
+        if (metadata.inputMethod) _sessionMetadata.inputMethod = metadata.inputMethod;
         _currentTrialEvents = [];
         _trials = [];
         _trialStartTimestamp = null;

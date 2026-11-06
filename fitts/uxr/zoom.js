@@ -258,7 +258,8 @@ function startZoomExperience(practice = false) {
         EventLogger.startSession({
             participantId: document.getElementById('button-pad-id').value,
             trialType: 'zoom',
-            sessionId: sessionId
+            sessionId: sessionId,
+            inputMethod: inputMethod
         });
         EventLogger.startTrial(1);
         EventLogger.setIsInZoomTarget(false);

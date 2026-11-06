@@ -28,6 +28,7 @@ let gestureCount = 0;
 let isGesturing = false;
 let gestureStopTimeout = null;
 let sessionId;
+let inputMethod = ''; // 'STP' or 'Other', chosen on the start screen
 let practiceMode = false;   // Practice runs: PRACTICE_TRIALS targets, no form submission or event log
 var scrollCursorX = null;
 var scrollCursorY = null;
@@ -483,7 +484,8 @@ function startScrollExperience(practice = false) {
         EventLogger.startSession({
             participantId: document.getElementById('button-pad-id').value,
             trialType: 'scroll',
-            sessionId: sessionId
+            sessionId: sessionId,
+            inputMethod: inputMethod
         });
         EventLogger.startTrial(1);
         EventLogger.setIsInTarget(false);
@@ -714,7 +716,8 @@ function startTextSelectionExperience(practice = false) {
         EventLogger.startSession({
             participantId: document.getElementById('button-pad-id').value,
             trialType: 'textselection',
-            sessionId: sessionId
+            sessionId: sessionId,
+            inputMethod: inputMethod
         });
         EventLogger.startTrial(1);
     }
@@ -800,6 +803,8 @@ function submitForm(trial, ttc, gestures) {
     }
     const sessionInput = document.getElementById('session_id');
     if (sessionInput) sessionInput.value = sessionId;
+    const methodInput = document.getElementById('input_method');
+    if (methodInput) methodInput.value = inputMethod;
 
     // Dispatch a synthetic submit event
     form.dispatchEvent(new Event('submit', { cancelable: true }));
@@ -837,3 +842,22 @@ function initButtonPad() {
 }
 
 window.addEventListener('load', initButtonPad);
+
+// Input method toggle (STP / Other). Start stays disabled until one is picked
+// so every recorded run is labelled; Practice records nothing, so it's left
+// enabled. The choice persists across runs until changed.
+function initInputMethodButtons() {
+    const buttons = document.querySelectorAll('.input-method-button');
+    if (buttons.length === 0) return;
+    const startButton = document.getElementById('start-button');
+    startButton.disabled = true;
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            inputMethod = button.dataset.method;
+            buttons.forEach(b => b.classList.toggle('selected', b === button));
+            startButton.disabled = false;
+        });
+    });
+}
+
+window.addEventListener('load', initInputMethodButtons);
