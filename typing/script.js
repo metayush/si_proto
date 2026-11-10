@@ -27,26 +27,33 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Number of prompts to use per test (default: 5)
     let maxPromptsPerTest = 5;
+    // True when ?num_prompts= is given; it then overrides per-dataset defaults.
+    let numPromptsFromURL = false;
 
     // Configuration for dataset-specific settings
     const datasetConfig = {
         'practice': {
+            prompts: 5, // default prompt count when this dataset is selected
             file: 'prompts/practice.txt',
             autocorrect: AUTOCORRECT_MODE.SYSTEM
         },
         'natural-language': {
+            prompts: 10, // default prompt count when this dataset is selected
             file: 'prompts/nat_lang_no_punc.txt',
             autocorrect: AUTOCORRECT_MODE.SYSTEM
         },
         'natural-language-punct': {
+            prompts: 10, // default prompt count when this dataset is selected
             file: 'prompts/nat_lang_with_cap_punc.txt',
             autocorrect: AUTOCORRECT_MODE.SYSTEM
         },
         'emails': {
+            prompts: 5, // default prompt count when this dataset is selected
             file: 'prompts/emails.txt',
             autocorrect: AUTOCORRECT_MODE.OFF
         },
         'passwords': {
+            prompts: 5, // default prompt count when this dataset is selected
             file: 'prompts/passwords.txt',
             autocorrect: AUTOCORRECT_MODE.OFF
         },
@@ -1043,6 +1050,15 @@ document.addEventListener('DOMContentLoaded', async function () {
                     updateAutocorrectRadioButtons(datasetAutocorrectMode);
                 }
 
+                // Apply the dataset's default prompt count, unless the URL
+                // pinned one with ?num_prompts=. Set directly (no resetTest)
+                // because reloadPromptsForNewDataset() below resets anyway.
+                const promptDefault = datasetConfig[this.value] && datasetConfig[this.value].prompts;
+                if (promptDefault && !numPromptsFromURL) {
+                    maxPromptsPerTest = promptDefault;
+                    promptCountInput.value = promptDefault;
+                }
+
                 // Update input area configuration when dataset changes
                 configureInputArea();
 
@@ -1060,7 +1076,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     });
 
-    let inputType = 'physical-keyboard';
+    let inputType = 'skb'; // matches the radio checked by default in index.html
     let inputTypeChangedByUser = false;
 
     // Add event listeners for dataset radio buttons
@@ -1074,15 +1090,20 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     });
 
+    // Used by auto-detect only. Options hidden in the UI (Physical Keyboard,
+    // Phone, Tablet) are skipped so a hidden choice is never silently selected
+    // and logged; ?input_type= and setting_preset can still pick them.
     function setInputType(value) {
         const radio = document.getElementById(value);
         if (!radio) return;
+        const option = radio.closest('.radio-option');
+        if (option && option.style.display === 'none') return;
         radio.checked = true;
         inputType = value;
     }
 
-    // Auto-select the input type from the device: headset -> SKB, tablet -> Tablet,
-    // anything else keeps the Physical Keyboard default. Runs before the
+    // Auto-select the input type from the device: headset -> SKB, tablet -> Tablet
+    // (currently a no-op: Tablet is hidden), anything else keeps the SKB default. Runs before the
     // setting_preset and input_type URL parameters, so those still override it.
     function isHeadset() {
         return /OculusBrowser|Oculus|Quest|PicoBrowser|Pico\b|Wolvic|\bVR\b/i.test(navigator.userAgent);
@@ -1379,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (numPromptsParam !== null) {
             const numPrompts = parseInt(numPromptsParam, 10);
             if (!isNaN(numPrompts) && numPrompts > 0) {
+                numPromptsFromURL = true;
                 updatePromptCount(numPrompts);
             }
         }

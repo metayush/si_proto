@@ -49,6 +49,6 @@ Then open **http://localhost:8000** in your browser.
 | `platform` | any string | Recorded in form submissions |
 | `dataset` | `practice`, `nat_lang_no_punc`, `nat_lang_with_cap_punc`, `emails`, `passwords`, `metal_keys` | Selects the prompt dataset |
 | `autocorrect` | `off`, `system`, `custom` | Sets the autocorrect mode |
-| `num_prompts` | integer | Limits the number of prompts to display |
+| `num_prompts` | integer | Fixes the number of prompts for every dataset (overrides the per-dataset defaults: Practice 5, Natural Language 10, Emails 5, Passwords 5) |
 | `user_id` | any string | Sets the user ID for form submissions |
 | `detailedLog` | `true` | Downloads a JSON log of every key event and text change at the end of each run (skipped for Practice and QA mode; always on in UXR presets) |

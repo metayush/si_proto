@@ -104,11 +104,13 @@
                         <input type="radio" id="metal-keys" name="dataset" value="metal-keys">
                         <label for="metal-keys">Metal Keys</label>
                     </div>
-                    <div class="radio-option">
+                    <!-- Shortcuts and Arrows hidden from the UI but kept selectable via
+                         ?dataset=shortcuts / ?dataset=arrows (key-chord mode). -->
+                    <div class="radio-option" style="display: none;">
                         <input type="radio" id="shortcuts" name="dataset" value="shortcuts">
                         <label for="shortcuts">Shortcuts</label>
                     </div>
-                    <div class="radio-option">
+                    <div class="radio-option" style="display: none;">
                         <input type="radio" id="arrows" name="dataset" value="arrows">
                         <label for="arrows">Arrows</label>
                     </div>
@@ -126,9 +128,11 @@
 
             <div class="settings-group">
                 <label class="settings-label">Input Type:</label>
+                <!-- Physical Keyboard, Phone and Tablet hidden from the UI but kept
+                     selectable via ?input_type= and setting_preset=uxr. -->
                 <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" id="physical-keyboard" name="input-type" value="physical-keyboard" checked>
+                    <div class="radio-option" style="display: none;">
+                        <input type="radio" id="physical-keyboard" name="input-type" value="physical-keyboard">
                         <label for="physical-keyboard">Physical Keyboard</label>
                     </div>
                     <div class="radio-option">
@@ -136,14 +140,14 @@
                         <label for="floating-keyboard">Floating Keyboard</label>
                     </div>
                     <div class="radio-option">
-                        <input type="radio" id="skb" name="input-type" value="skb">
+                        <input type="radio" id="skb" name="input-type" value="skb" checked>
                         <label for="skb">SKB</label>
                     </div>
-                    <div class="radio-option">
+                    <div class="radio-option" style="display: none;">
                         <input type="radio" id="phone" name="input-type" value="phone">
                         <label for="phone">Phone</label>
                     </div>
-                    <div class="radio-option">
+                    <div class="radio-option" style="display: none;">
                         <input type="radio" id="tablet" name="input-type" value="tablet">
                         <label for="tablet">Tablet</label>
                     </div>
