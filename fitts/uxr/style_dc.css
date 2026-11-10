@@ -189,22 +189,24 @@ button {
 
 .targetarrowup {
     position: absolute;
-    top: 40%;
+    top: 50%; /* centred on .targetbox; only one arrow shows at a time */
     left: 20%;
     transform: translate(-50%, -50%);
     pointer-events: none;
     font-size: 4.25rem;
     font-weight: 600;
+    line-height: 1;
 }
 
 .targetarrowdown {
     position: absolute;
-    top: 60%;
+    top: 50%; /* centred on .targetbox; only one arrow shows at a time */
     left: 20%;
     transform: translate(-50%, -50%);
     pointer-events: none;
     font-size: 4.25rem;
     font-weight: 600;
+    line-height: 1;
 }
 
 .textselection-body {
