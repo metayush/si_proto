@@ -21,7 +21,8 @@ body {
 
 .container {
     flex: 1;
-    padding: 2rem;
+    /* Top padding is half the sides so the title sits closer to the top. */
+    padding: 1rem 2rem 2rem;
     border-radius: 12px;
     background-color: white;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -30,6 +31,7 @@ body {
 h1 {
     text-align: center;
     color: #2c3e50;
+    margin-top: 0.335em; /* half the browser default (0.67em) */
     margin-bottom: 1.5rem;
 }
 
@@ -516,19 +518,18 @@ h1 {
     }
 
     .app-wrapper {
-        flex-direction: column;
         gap: 19px;
     }
 
+    /* Settings stay on the right but shrink with the window, so the
+       prompt panel keeps most of the width. */
     .settings-panel {
-        width: 100%;
-        position: static;
-        order: 2;
+        box-sizing: border-box;
+        width: 40%;
     }
 
     .container {
-        padding: 1.5rem;
-        order: 1;
+        padding: 0.75rem 1.5rem 1.5rem;
     }
 
     .radio-group {
@@ -538,7 +539,7 @@ h1 {
 
 @media (max-width: 600px) {
     .container {
-        padding: 1rem;
+        padding: 0.5rem 1rem 1rem;
     }
 
     .settings-panel {
@@ -547,6 +548,23 @@ h1 {
 
     h1 {
         font-size: 1.5rem;
+    }
+}
+
+/* Only on very narrow screens: stack the settings panel below the test. */
+@media (max-width: 500px) {
+    .app-wrapper {
+        flex-direction: column;
+    }
+
+    .settings-panel {
+        width: 100%;
+        position: static;
+        order: 2;
+    }
+
+    .container {
+        order: 1;
     }
 }
 
